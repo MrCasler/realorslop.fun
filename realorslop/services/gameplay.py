@@ -1,9 +1,11 @@
 import json
 import os
 import random
+from pathlib import Path
 
 #pairs = env.get("PAIRS_FILE", "data/pairs.json")
-pairs_file = os.path.join("data", "pairs.json")
+BASE_DIR = Path(__file__).resolve().parent  # realorslop/
+PAIRS_FILE = BASE_DIR / "data" / "pairs.json"
 
 highscore = 0
 score = 0
@@ -14,7 +16,7 @@ def load_pairs(filepath):
         return json.load(f)
 
 def pick_pair():
-    pair = load_pairs(pairs_file)
+    pair = load_pairs(PAIRS_FILE)
     return random.choice(pair)
 
 def shuffle_pair():
