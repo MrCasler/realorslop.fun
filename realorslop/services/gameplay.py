@@ -4,8 +4,11 @@ import random
 from pathlib import Path
 
 #pairs = env.get("PAIRS_FILE", "data/pairs.json")
-BASE_DIR = Path(__file__).resolve().parent  # realorslop/
-PAIRS_FILE = BASE_DIR / "data" / "pairs.json"
+
+PROJECT_DIR = Path(__file__).resolve().parents[1]  # realorslop/
+PAIRS_FILE = PROJECT_DIR / "services" / "data" / "pairs.json"
+if not PAIRS_FILE.exists():
+    raise FileNotFoundError(f"pairs.json not found at {PAIRS_FILE}")
 
 highscore = 0
 score = 0
