@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Real or Slop{% endblock %}
+
+
+{% block content %}
+
+<!--<pre>{{ game_data }}</pre> -->
+
+<section class="" id="gameloop">
+    <div class="container mx-auto px-4">
+
+    <h4 id="gameloop-subheading">Guess which image is real</h4>
+
+    <div class="container mx-auto px-4">
+        
+        <p> if you get it wrong, the game will explain why it is AI-generated.</p>
+    </div>
+
+<div 
+  x-data="{
+    leftImage: '{{ game_data.left_image }}',
+    rightImage: '{{ game_data.right_image }}',
+    isLeftReal: {{ 'true' if game_data.is_left_real else 'false' }},
+    explanation: '{{ game_data.explanation }}',
+    score: 0,
+    lives: 3,
+    feedback: '',
+    guess(side) {
+      let correct = (side === 'left' && this.isLeftReal) || (side === 'right' && !this.isLeftReal);
+      if (correct) {
+        this.score++;
+        this.feedback = '✅ Correct!';
+      } else {
+        this.lives--;
+        this.feedback = '❌ Wrong! ' + this.explanation;
+      }
+
+      if (this.lives <= 0) {
+        this.feedback = `💀 Game Over! Final score: ${this.score}`;
+      }
+    }
+  }"
+  class="container mx-auto px-4"
+>
+
+        <div class="mb-4">
+            <p class="text-lg font-semibold">Score: <span x-text="score"></span></p>
+            <p class="text-lg font-semibold">Lives: <span x-text="lives"></span></p>
+            <p class="text-xl mt-2" x-text="feedback"></p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+            <div class="rounded overflow-hidden bg-gray-50">
+                <img :src="leftImage" @click="guess('left')" alt="Left Image" class="" loading="lazy">
+            </div>
+            <div class="rounded overflow-hidden bg-gray-50">
+                <img :src="rightImage" @click="guess('right')" alt="Right Image" class="w-full h-64 md:h-80 object-cover" loading="lazy">
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

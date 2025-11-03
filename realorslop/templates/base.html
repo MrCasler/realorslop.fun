@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Real or Slop{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs" ></script>
+
+</head>
+<body>
+<!-- Header Section -->
+<header>
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/learn-more">Learn more</a></li>
+            <li><a href="/about">About Me</a></li>
+        </ul>
+    </nav>
+</header>
+
+{% block content %}
+{% endblock %}
+<!-- Footer Section -->
+
+<footer>
+    <p>&copy; 2025 Real or Slop. All rights reserved.</p>
+    
+
+</footer>
+</body>
+</html>
