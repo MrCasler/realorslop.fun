@@ -13,7 +13,8 @@ services:
     branch: master
     plan: free
     envVars:
-      - key: DATABASE_URL
+      - key: DATABASE_TYPE
+        value: postgresql
         fromDatabase:
           name: umami-db
           property: connectionString
