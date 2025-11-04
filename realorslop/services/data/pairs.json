@@ -3,14 +3,97 @@
     "id": "pieter-01",
     "real": "/static/images/real/real_pieter.jpg",
     "ai":   "/static/images/ai/aigen_pieter2.jpeg",
+    "real_source": "https://pbs.twimg.com/profile_images/1589756412078555136/YlXMBzhp_400x400.jpg",
+    "ai_source": "https://pbs.twimg.com/media/G3zFcYvXoAAATHR?format=jpg&name=4096x4096",
     "explanation": "Lens bloom and sun halo look okay, but the skin specular is too uniformly glossy on the AI one."
     },
 
   {  
     "id": "city-01",
     "real": "/static/images/real/real_city.jpg",
+    "real_source": "https://simple.wikipedia.org/wiki/City",
     "ai":   "/static/images/ai/aigen_city.png",
+    "ai_source": "gpt made it",
     "explanation": "The AI-generated image has unnatural reflections on the buildings. The reflections lack the complexity and variation seen in real-world reflections."
-  }
+  },
+{
+    "id": "face-01",
+    "real": "/static/images/real/real_face.jpg",
+    "real_source": "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg",
+    "ai":   "/static/images/ai/aigen_face.png",
+    "ai_source": "thispersondoesnotexist.com",
+    "explanation": "No Explanation Yet"
+},
+  {
+    "id": "face-02",
+    "real": "/static/images/real/real_face2.jpg",
+    "real_source": "https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg",
+    "ai":   "/static/images/ai/aigen_face2.png",
+    "ai_source": "thispersondoesnotexist.com",
+    "explanation": "No Explanation Yet"
+},
+{
+    "id": "face-03",
+    "real": "/static/images/real/real_face3.jpg",
+    "real_source": "https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg",
+    "ai":   "/static/images/ai/aigen_face3.png",
+    "explanation": "No Explanation Yet"
+},
+{
+    "id": "face-04",
+    "real": "/static/images/real/real_face4.jpg",
+    "real_source": "https://images.pexels.com/photos/2097475/pexels-photo-2097475.jpeg",
+    "ai":   "/static/images/ai/aigen_face4.png",
+    "ai_source": "thispersondoesnotexist.com",
+    "explanation": "No Explanation Yet"
+},
+{
+    "id": "face-05",
+    "real": "/static/images/real/real_face5.jpg",
+    "real_source": "https://images.pexels.com/photos/18263079/pexels-photo-18263079.jpeg",
+    "ai":   "/static/images/ai/aigen_face5.png",
+    "ai_source": "thispersondoesnotexist.com",
+    "explanation": "No Explanation Yet"
+},
+{
+    "id": "face-06",
+    "real": "/static/images/real/real_face6.jpg",
+    "real_source": "https://images.pexels.com/photos/769772/pexels-photo-769772.jpeg",
+    "ai":   "/static/images/ai/aigen_face6.png",
+    "ai_source": "thispersondoesnotexist.com",
+    "explanation": "No Explanation Yet"
+},
+{
+    "id": "face-07",
+    "real": "/static/images/real/real_face7.jpg",
+    "real_source": "https://images.pexels.com/photos/2669718/pexels-photo-2669718.jpeg",
+    "ai":   "/static/images/ai/aigen_face7.png",
+    "ai_source": "thispersondoesnotexist.com",
+    "explanation": "No Explanation Yet"
+},
+{
+    "id": "face-08",
+    "real": "/static/images/real/real_face8.jpg",
+    "real_source": "https://images.pexels.com/photos/821748/pexels-photo-821748.jpeg",
+    "ai":   "/static/images/ai/aigen_face8.png",
+    "ai_source": "thispersondoesnotexist.com",
+    "explanation": "No Explanation Yet"
+},
+{
+    "id": "face-09",
+    "real": "/static/images/real/real_face9.jpg",
+    "real_source": "https://images.pexels.com/photos/698532/pexels-photo-698532.jpeg",
+    "ai":   "/static/images/ai/aigen_face9.png",
+    "ai_source": "thispersondoesnotexist.com",
+    "explanation": "No Explanation Yet"
+},
+{
+    "id": "face-10",
+    "real": "/static/images/real/real_face10.jpg",
+    "real_source": "https://images.pexels.com/photos/848740/pexels-photo-848740.jpeg",
+    "ai":   "/static/images/ai/aigen_face10.png",
+    "ai_source": "thispersondoesnotexist.com",
+    "explanation": "No Explanation Yet"
+}
 
 ]

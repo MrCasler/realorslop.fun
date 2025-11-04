@@ -1,6 +1,6 @@
 from pathlib import Path
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from jinja2 import Environment
@@ -22,3 +22,8 @@ def home_page(request: Request):
 def game_page(request: Request):
     game_data = gameplay.shuffle_pair()
     return templates.TemplateResponse("game.html", {"request": request, "game_data": game_data})
+    
+@app.get("/api/next", response_class=JSONResponse)
+def api_next():
+    data = gameplay.shuffle_pair()
+    return JSONResponse(data)
