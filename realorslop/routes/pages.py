@@ -24,6 +24,8 @@ def game_page(request: Request):
     return templates.TemplateResponse("game.html", {"request": request, "game_data": game_data})
     
 @app.get("/api/next", response_class=JSONResponse)
-def api_next():
-    data = gameplay.shuffle_pair()
+def api_next(request: Request):
+    tag = request.query_params.get("tag")
+    data = gameplay.shuffle_pair(tag)
     return JSONResponse(data)
+
