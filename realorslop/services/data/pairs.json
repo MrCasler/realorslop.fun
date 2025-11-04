@@ -1,15 +1,15 @@
 [
   {
     "id": "pieter-01",
-    "real": "/static/images/real_pieter.jpg",
-    "ai":   "/static/images/aigen_pieter2.jpeg",
+    "real": "/static/images/real/real_pieter.jpg",
+    "ai":   "/static/images/ai/aigen_pieter2.jpeg",
     "explanation": "Lens bloom and sun halo look okay, but the skin specular is too uniformly glossy on the AI one."
     },
 
   {  
     "id": "city-01",
-    "real": "/static/images/real_city.jpg",
-    "ai":   "/static/images/aigen_city.png",
+    "real": "/static/images/real/real_city.jpg",
+    "ai":   "/static/images/ai/aigen_city.png",
     "explanation": "The AI-generated image has unnatural reflections on the buildings. The reflections lack the complexity and variation seen in real-world reflections."
   }
 
