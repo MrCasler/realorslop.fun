@@ -10,7 +10,7 @@
 <section class="" id="gameloop">
     <div class="container mx-auto px-4">
 
-    <h4 id="gameloop-subheading">Guess which image is real</h4>
+    <h4 id="gameloop-subheading" class="text-2xl " > Guess which image is real</h4>
 
     <div class="container mx-auto px-4">
         
@@ -18,12 +18,12 @@
     </div>
 
 <div 
-  x-data="{
+  x-data='{
     leftImage: {{ game_data.left_image | tojson }},
     rightImage: {{ game_data.right_image | tojson }},
-    isLeftReal: {{ 'true' if game_data.is_left_real else 'false'  }},
+    isLeftReal: {{ game_data.is_left_real | tojson }},
     explanation: {{ game_data.explanation | tojson }},
-    score: 0, lives: 3, feedback: '', locked: false,
+    score: 0, lives: 3, feedback: "", locked: false,
 
     async nextRound() {
       if (this.lives <= 0) {
@@ -31,15 +31,15 @@
         return;
       }
       try {
-        const response = await fetch('/api/next');
+        const response = await fetch("/api/next");
         const data = await response.json();
         this.leftImage = data.left_image;
         this.rightImage = data.right_image;
         this.isLeftReal = data.is_left_real;
         this.explanation = data.explanation;
-        this.feedback = '';
+        this.feedback = "";
       } catch (error) {
-        console.error('Error fetching next round data:', error);
+        console.error("Error fetching next round data:", error);
       } finally {
         this.locked = false;
       }
@@ -47,13 +47,13 @@
 
     async guess(side) {
     if (this.locked) return;
-      const correct = (side === 'left' && this.isLeftReal) || (side === 'right' && !this.isLeftReal);
+      const correct = (side === "left" && this.isLeftReal) || (side === "right" && !this.isLeftReal);
       if (correct) {
         this.score++;
-        this.feedback = '✅ Correct! Great Job! 😊';
+        this.feedback = "✅ Correct! Great Job! 😊";
       } else {
         this.lives--; this.lives = Math.max(this.lives, 0);
-        this.feedback = '❌ Wrong! ' + this.explanation;
+        this.feedback = "❌ Wrong! "     + this.explanation;
       }
 
       if (this.lives <= 0) {
@@ -63,7 +63,7 @@
         this.locked = true;
         setTimeout(() => this.nextRound(), 3000);
     }
-  }"
+  }'
   class="container mx-auto px-4"
 >
 
@@ -78,7 +78,7 @@
                 <img :src="leftImage" @click="guess('left')" alt="Left Image" class="" loading="lazy">
             </div>
             <div class="rounded overflow-hidden bg-gray-50">
-                <img :src="rightImage" @click="guess('right')" alt="Right Image" class="w-full h-64 md:h-80 object-cover" loading="lazy">
+                <img :src="rightImage" @click="guess('right')" alt="Right Image" class="" loading="lazy">
             </div>
         </div>
     </div>
