@@ -29,3 +29,7 @@ def api_next(request: Request):
     data = gameplay.shuffle_pair(tag)
     return JSONResponse(data)
 
+@app.get("/api/tags")
+def api_tags():
+    tags = gameplay.get_tags()
+    return {"tags": tags}

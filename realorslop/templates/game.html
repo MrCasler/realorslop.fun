@@ -23,8 +23,26 @@
     rightImage: {{ game_data.right_image | tojson }},
     isLeftReal: {{ game_data.is_left_real | tojson }},
     explanation: {{ game_data.explanation | tojson }},
+    source: {{ game_data.source | tojson }},
     score: 0, lives: 3, feedback: "", locked: false,
     selectedTag: "all",
+    tags: ["all", "faces", "cities"],
+    showPlayAgain: false,
+
+    async init() {
+        try {
+            const res = await fetch("/api/tags");
+            const data = await res.json();
+            this.tags = ["all", ...data.tags];
+            // restore last chosen tag if you like:
+            const saved = localStorage.getItem("ros_tag");
+            if (saved && this.tags.includes(saved)) this.selectedTag = saved;
+            } 
+        catch (e) 
+            { 
+                console.warn("tags fetch failed", e); 
+            }
+    },
 
     async nextRound() {
       if (this.lives <= 0) {
@@ -54,24 +72,41 @@
       }
     },
 
+    playAgain() {
+  this.score = 0;
+  this.lives = 3;
+  this.feedback = "";
+  this.showPlayAgain = false;
+  umami?.track("game_restart", { tag: this.selectedTag });
+  this.nextRound();
+},
+
     async guess(side) {
     if (this.locked) return;
       const correct = (side === "left" && this.isLeftReal) || (side === "right" && !this.isLeftReal);
       if (correct) {
         this.score++;
-        this.feedback = "✅ Correct! Great Job! 😊";
+        this.feedback = "✅ Correct! Great Job! 😊 I got the image from " + this.source;
+        umami?.track("guess_correct", { tag: this.selectedTag });
+
       } else {
         this.lives--; this.lives = Math.max(this.lives, 0);
         this.feedback = "❌ Wrong! "     + this.explanation;
+        umami?.track("guess_wrong", { tag: this.selectedTag });
+
       }
 
       if (this.lives <= 0) {
         this.feedback = `💀 Game Over! Final score: ${this.score}`;
+        this.showPlayAgain = true;
+        umami?.track("game_over", { score: this.score, tag: this.selectedTag });
+        
         return;
       }
         this.locked = true;
-        setTimeout(() => this.nextRound(), 1000);
+        setTimeout(() => this.nextRound(), 700);
     }
+
   }'
   class="container mx-auto px-4"
 >
@@ -80,11 +115,19 @@
             <p class="text-lg font-semibold">Score: <span x-text="score"></span></p>
             <p class="text-lg font-semibold">Lives: <span x-text="lives"></span></p>
             <p class="text-xl mt-2" x-text="feedback"></p>
+            <div x-show="showPlayAgain" class="mt-4">
+                <button @click="playAgain()" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                    Play Again
+                </button>
+                <button @click="const tweet = `I scored ${score} correct guesses on realorslop.fun 🎨🤖, try beating my score`; umami?.track('share_score', { score: score, tag: selectedTag }); window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(tweet)}`);" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"> 
+                    Share your score
+                </button>
+            </div>
         </div>
-        <select x-model="selectedTag" @change="nextRound()" class="border rounded p-1">
-            <option value="all">All</option>
-            <option value="faces">Faces</option>
-            <option value="cities">Cities</option>
+        <select x-model="selectedTag" @change="localStorage.setItem('ros_tag', selectedTag); nextRound()" class="border rounded p-1">
+            <template x-for="tag in tags" :key="tag">
+                <option :value="tag" x-text="tag.charAt(0).toUpperCase() + tag.slice(1)"></option>
+            </template>
         </select>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
             <div class="rounded overflow-hidden bg-gray-50">
