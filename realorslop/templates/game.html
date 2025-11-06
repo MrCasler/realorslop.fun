@@ -1,153 +1,207 @@
 {% extends 'base.html' %}
 
-{% block title %}Home - Real or Slop{% endblock %}
-
+{% block title %}Game - Real or Slop{% endblock %}
 
 {% block content %}
+<section id="gameloop" class="py-8">
+  <div
+    x-data='{
+      // initial state from server for instant first render
+      leftImage:  {{ game_data.left_image  | tojson }},
+      rightImage: {{ game_data.right_image | tojson }},
+      isLeftReal: {{ game_data.is_left_real | tojson }},
+      explanation: {{ game_data.explanation | tojson }},
+      leftSource:  {{ (game_data.left_source  if game_data.get("left_source")  else None) | tojson }},
+      rightSource: {{ (game_data.right_source if game_data.get("right_source") else None) | tojson }},
 
-<!--<pre>{{ game_data }}</pre> -->
+      // ui state
+      score: 0, lives: 3, feedback: "", locked: false,
+      showPlayAgain: false,
 
-<section class="" id="gameloop">
-    <div class="container mx-auto px-4">
+      // tagging
+      selectedTag: "all",
+      tags: ["all"],
 
-    <h4 id="gameloop-subheading" class="text-2xl text-center" > Guess which image is real</h4>
-
-    <div class="container mx-auto px-4 text-center">
-        
-        <p> if you get it wrong, the game will explain why it is AI-generated.</p>
-    </div>
-
-<div 
-  x-data='{
-    leftImage: {{ game_data.left_image | tojson }},
-    rightImage: {{ game_data.right_image | tojson }},
-    isLeftReal: {{ game_data.is_left_real | tojson }},
-    explanation: {{ game_data.explanation | tojson }},
-    source: {{ game_data.source | tojson }},
-    score: 0, lives: 3, feedback: "", locked: false,
-    selectedTag: "all",
-    tags: ["all", "faces", "cities"],
-    showPlayAgain: false,
-
-    async init() {
+      async init() {
+        // tags
         try {
-            const res = await fetch("/api/tags");
-            const data = await res.json();
-            this.tags = ["all", ...data.tags];
-            // restore last chosen tag if you like:
-            const saved = localStorage.getItem("ros_tag");
-            umami?.track("game_start", { tag: this.selectedTag });
+          const res = await fetch("/api/tags");
+          const data = await res.json();
+          this.tags = ["all", ...data.tags];
+          const saved = localStorage.getItem("ros_tag");
+          if (saved && this.tags.includes(saved)) this.selectedTag = saved;
+        } catch (e) { console.warn("tags fetch failed", e); }
+        // analytics
+        umami?.track("game_start", { tag: this.selectedTag });
+      },
 
-            if (saved && this.tags.includes(saved)) this.selectedTag = saved;
-            } 
-        catch (e) 
-            { 
-                console.warn("tags fetch failed", e); 
-            }
-    },
+      async nextRound() {
+        if (this.lives <= 0) {
+          this.feedback = `💀 Game Over! Final score: ${this.score}`;
+          this.showPlayAgain = true;
+          return;
+        }
+        this.locked = true;
+        try {
+          const res = await fetch(`/api/next?tag=${encodeURIComponent(this.selectedTag)}`);
+          const data = await res.json();
 
-    async nextRound() {
-      if (this.lives <= 0) {
-        this.feedback = `💀 Game Over! Final score: ${this.score}`;
-        return;
-      }
-      try {
-        const response = await fetch(`/api/next?tag=${encodeURIComponent(this.selectedTag)}`);
-        const data = await response.json();
-        
-        if (data.error === "not_enough_images_for_tag") {
-        this.feedback = "Not enough images in this category yet. Switching to All.";
-        this.selectedTag = "all";
-        return this.nextRound();
+          if (data.error === "not_enough_images_for_tag") {
+            this.feedback = "Not enough images here yet. Switching to All.";
+            this.selectedTag = "all";
+            const resAll = await fetch("/api/next?tag=all");
+            const d = await resAll.json();
+            this.leftImage = d.left_image;
+            this.rightImage = d.right_image;
+            this.isLeftReal = d.is_left_real;
+            this.explanation = d.explanation;
+            this.leftSource  = d.left_source ?? null;
+            this.rightSource = d.right_source ?? null;
+            this.feedback = "";
+            return;
+          }
+
+          this.leftImage = data.left_image;
+          this.rightImage = data.right_image;
+          this.isLeftReal = data.is_left_real;
+          this.explanation = data.explanation;
+          this.leftSource  = data.left_source ?? null;
+          this.rightSource = data.right_source ?? null;
+          this.feedback = "";
+        } catch (e) {
+          console.error("nextRound error", e);
+          this.feedback = "Network hiccup — try again.";
+        } finally {
+          this.locked = false;
+        }
+      },
+
+      playAgain() {
+        this.score = 0;
+        this.lives = 3;
+        this.feedback = "";
+        this.showPlayAgain = false;
+        umami?.track("game_restart", { tag: this.selectedTag });
+        this.nextRound();
+      },
+
+      shareScore() {
+        const tweet = `I scored ${this.score} on realorslop.fun 🎨🤖 — can you beat me?`;
+        umami?.track("share_score", { score: this.score, tag: this.selectedTag });
+        window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(tweet)}`);
+      },
+
+      async guess(side) {
+        if (this.locked) return;
+        const correct = (side === "left" && this.isLeftReal) || (side === "right" && !this.isLeftReal);
+
+        // pick source based on clicked side (if provided by API)
+        const usedSource = side === "left" ? this.leftSource : this.rightSource;
+        const srcText = usedSource ? `  Source: ${usedSource}` : "";
+
+        if (correct) {
+          this.score++;
+          this.feedback = "✅ Correct! Nice spot." + srcText;
+          umami?.track("guess_correct", { tag: this.selectedTag });
+        } else {
+          this.lives = Math.max(this.lives - 1, 0);
+          this.feedback = "❌ Wrong! " + this.explanation + srcText;
+          umami?.track("guess_wrong", { tag: this.selectedTag });
         }
 
-        this.leftImage = data.left_image;
-        this.rightImage = data.right_image;
-        this.isLeftReal = data.is_left_real;
-        this.explanation = data.explanation;
-        this.feedback = "";
+        if (this.lives <= 0) {
+          this.feedback = `💀 Game Over! Final score: ${this.score}`;
+          this.showPlayAgain = true;
+          umami?.track("game_over", { score: this.score, tag: this.selectedTag });
+          return;
+        }
 
-      } catch (error) {
-        console.error("Error fetching next round data:", error);
-      } finally {
-        this.locked = false;
-      }
-    },
-
-    playAgain() {
-  this.score = 0;
-  this.lives = 3;
-  this.feedback = "";
-  this.showPlayAgain = false;
-  umami?.track("game_restart", { tag: this.selectedTag });
-  this.nextRound();
-},
-
-shareScore() {
-  const tweet = `I scored ${this.score} correct guesses on realorslop.fun 🎨🤖, try beating my score`;
-  umami?.track("share_score", { score: this.score, tag: this.selectedTag });
-  window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(tweet)}`);
-},  
-
-    async guess(side) {
-    if (this.locked) return;
-      const correct = (side === "left" && this.isLeftReal) || (side === "right" && !this.isLeftReal);
-      if (correct) {
-        this.score++;
-        this.feedback = "✅ Correct! Great Job! 😊 I got the image from " + this.source;
-        umami?.track("guess_correct", { tag: this.selectedTag });
-
-      } else {
-        this.lives--; this.lives = Math.max(this.lives, 0);
-        this.feedback = "❌ Wrong! "     + this.explanation;
-        umami?.track("guess_wrong", { tag: this.selectedTag });
-
-      }
-
-      if (this.lives <= 0) {
-        this.feedback = `💀 Game Over! Final score: ${this.score}`;
-        this.showPlayAgain = true;
-        umami?.track("game_over", { score: this.score, tag: this.selectedTag });
-        
-        return;
-      }
         this.locked = true;
         setTimeout(() => this.nextRound(), 700);
-    }
+      }
+    }'
+    class="max-w-5xl mx-auto px-6"
+  >
 
-  }'
-  class="container mx-auto px-4"
->
+    <!-- HUD: score / lives + tag selector -->
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div class="text-sm md:text-base font-medium">
+        Score: <span x-text="score"></span> · Lives: <span x-text="lives"></span>
+      </div>
 
-        <div class="mb-4 ">
-
-            <p class="text-lg font-semibold text-center">Score: <span x-text="score"></span></p>
-            <p class="text-lg font-semibold text-center">Lives: <span x-text="lives"></span></p>
-            <div x-show="feedback" class="mt-3 px-4 py-2 rounded text-white" :class="feedback.includes('✅') ? 'bg-green-500' : 'bg-red-500'">
-                <p x-text="feedback"></p>
-            </div>            
-                <div x-show="showPlayAgain" class="mt-4">
-                <button @click="playAgain()" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-                    Play Again
-                </button>
-                <button @click="shareScore()" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"> 
-                    Share your score
-                </button>
-            </div>
-        </div>
-        <select x-model="selectedTag" @change="localStorage.setItem('ros_tag', selectedTag); nextRound()" class="border rounded p-1 flex">
-            <template x-for="tag in tags" :key="tag">
-                <option :value="tag" x-text="tag.charAt(0).toUpperCase() + tag.slice(1)"></option>
-            </template>
+      <div class="flex items-center gap-2">
+        <label class="text-xs text-white/60">Type</label>
+        <select
+          x-model="selectedTag"
+          @change="localStorage.setItem('ros_tag', selectedTag); nextRound()"
+          class="bg-white/5 ring-1 ring-white/10 rounded-lg px-3 py-2 text-sm hover:bg-white/10 transition"
+        >
+          <template x-for="tag in tags" :key="tag">
+            <option :value="tag" x-text="tag.charAt(0).toUpperCase()+tag.slice(1)"></option>
+          </template>
         </select>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
-            <div class="rounded overflow-hidden bg-gray-50">
-                <img :src="leftImage" @click="guess('left')" alt="Left Image" class="" loading="lazy">
-            </div>
-            <div class="rounded overflow-hidden bg-gray-50">
-                <img :src="rightImage" @click="guess('right')" alt="Right Image" class="" loading="lazy">
-            </div>
-        </div>
+      </div>
     </div>
+
+    <!-- Feedback banner -->
+    <div x-show="feedback"
+         x-transition
+         class="mb-4 px-4 py-3 rounded-xl text-sm"
+         :class="feedback.includes('✅') ? 'bg-green-500/20 ring-1 ring-green-400/30' : 'bg-red-500/20 ring-1 ring-red-400/30'">
+      <p x-text="feedback"></p>
+    </div>
+
+    <!-- Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <!-- LEFT -->
+      <div
+        :class="locked ? 'opacity-70 pointer-events-none' : ''"
+        class="group rounded-2xl bg-white/5 ring-1 ring-white/10 overflow-hidden hover:ring-[#22f2a2]/50 transition cursor-pointer"
+      >
+        <div class="aspect-[4/3] md:aspect-square">
+          <img
+            :src="leftImage"
+            @click="guess('left')"
+            alt="Left Image"
+            class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform"
+            loading="lazy" decoding="async"
+          >
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div
+        :class="locked ? 'opacity-70 pointer-events-none' : ''"
+        class="group rounded-2xl bg-white/5 ring-1 ring-white/10 overflow-hidden hover:ring-[#22f2a2]/50 transition cursor-pointer"
+      >
+        <div class="aspect-[4/3] md:aspect-square">
+          <img
+            :src="rightImage"
+            @click="guess('right')"
+            alt="Right Image"
+            class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform"
+            loading="lazy" decoding="async"
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- Game over actions -->
+    <div x-show="showPlayAgain" class="mt-6 flex flex-col sm:flex-row items-center gap-3">
+      <button @click="playAgain()"
+              class="px-5 py-3 rounded-xl bg-green-500 text-gray-900 font-medium hover:opacity-95 transition">
+        Play Again
+      </button>
+      <button @click="shareScore()"
+              class="px-5 py-3 rounded-xl bg-blue-500 text-white font-medium hover:opacity-95 transition">
+        Share your score
+      </button>
+    </div>
+
+    <!-- Tiny helper text -->
+    <p class="mt-4 text-xs text-white/50 text-center">
+      Tip: use ← → arrows to guess (add later).
+    </p>
+  </div>
 </section>
 {% endblock %}

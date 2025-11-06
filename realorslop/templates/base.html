@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,25 +8,32 @@
     <script defer src="https://unpkg.com/alpinejs" ></script>
     <script defer src="https://umami-tpur.onrender.com/script.js" data-website-id="dbc4822d-cd2b-4b1d-9fa6-6c1e82108863"></script>
 </head>
-<body>
+
+
+<body class="min-h-screen h-full bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 text-white antialiased font-sans">
 <!-- Header Section -->
-<header>
-    <nav class="bg-gray-800 text-white p-4 items-stretch ">
-        <ul class="flex space-x-4 justify-center">
-            <li><a href="/">Home</a></li>
-            <li><a href="/learn-more">Learn more</a></li>
-            <li><a href="/about">About Me</a></li>
-        </ul>
-    </nav>
+<header class="sticky top-0 z-50 backdrop-blur bg-gray-950/60 border-b border-white/10">
+  <nav class="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+    <a href="/" class="font-semibold tracking-tight">real<span class="text-[#22f2a2]">or</span>slop</a>
+    <ul class="flex items-center gap-6 text-sm">
+      <li><a class="hover:text-white/90 text-white/70" href="/">Home</a></li>
+      <li><a class="hover:text-white/90 text-white/70" href="/learn-more">Learn</a></li>
+      <li><a class="hover:text-white/90 text-white/70" href="/about">About</a></li>
+    </ul>
+  </nav>
 </header>
+
 
 {% block content %}
 {% endblock %}
 <!-- Footer Section -->
 
-<footer class="text-center text-sm text-gray-500 py-5">
-    Found a bug? @ me on <a class="text-blue-500 underline" href="https://x.com/caslerbiz">X/Twitter</a> or <a class="text-blue-500 underline" href="https://github.com/MrCasler/realorslop.fun/issues">Report it on GitHub</a>
-    <p>&copy; 2025 Real or Slop. All rights reserved.</p> 
+<footer class="border-t border-white/10 mt-16 py-6 text-center text-sm text-white/50">
+  Found a bug? @ me on
+  <a class="text-white/80 underline hover:text-white" href="https://x.com/caslerbiz">X/Twitter</a>
+  or <a class="text-white/80 underline hover:text-white" href="https://github.com/MrCasler/realorslop.fun/issues">GitHub Issues</a>
+  <p class="mt-1">&copy; 2025 Real or Slop.</p>
 </footer>
+
 </body>
 </html>

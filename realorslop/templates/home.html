@@ -4,21 +4,89 @@
 
 {% block content %}
 
-<section class ="" id="Welcome" >
-<div class="container">
-    <h1>Welcome to Real or Slop</h1>
-    <p>The game where you guess whether an image is real or #AIslop, and teaches you what to look out for with each wrong guess.</p>
-</div>
+<section id="hero" class="relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 py-10 sm:py-10 text-center">
+    <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight">
+      Spot the <span class="text-[#22f2a2]">real</span> from the <span class="text-white/60">#AIslop</span>.
+    </h1>
+    <p class="mt-4 text-white/70 max-w-2xl mx-auto text-lg">
+      A fast, teach-as-you-play game. Every wrong guess explains the tell so you get better every round.
+    </p>
+
+    <div class="mt-8 flex items-center justify-center gap-3">
+      <a href="/game" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white text-gray-900 font-medium hover:opacity-95 transition">
+        Play now
+        <span aria-hidden>→</span>
+      </a>
+      <a href="#rules" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl ring-1 ring-white/20 text-white hover:bg-white/5 transition">
+        How it works
+      </a>
+    </div>
+
+    <p class="mt-3 text-xs text-white/50">
+      No account. No fluff. New pairs every time.
+    </p>
+  </div>
+
+      <!-- Teaser challenge -->
+<section id="teaser" class="mt-16">
+  <div class="max-w-5xl mx-auto px-6 text-center">
+    <h2 class="text-xl font-semibold mb-4 text-white/90">One of these is AI-generated…</h2>
+    <div class="grid grid-cols-2 gap-4">
+      <img src="/static/images/real/real_city.jpg"
+           alt="Example real photo"
+           class="rounded-2xl object-cover w-full aspect-square ring-1 ring-white/10 hover:ring-[#22f2a2]/60 transition hover:scale-95">
+      <img src="/static/images/ai/aigen_city.png"
+           alt="Example AI photo"
+           class="rounded-2xl object-cover w-full aspect-square ring-1 ring-white/10 hover:ring-[#22f2a2]/60 transition hover:scale-95">
+    </div>
+    <p class="mt-4 text-white/60 text-sm">Can you tell which one’s fake? 👀</p>
+    <a href="/game"
+       class="mt-6 inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#22f2a2] text-gray-900 font-medium hover:scale-[1.02] transition">
+      Try for real →
+    </a>
+  </div>
+</section>
 </section>
 
-<section class="" id="rules">
-    <div class="container mx-auto px-4">
-        <h2 class="text-2xl font-bold mb-4">How to Play</h2>
-        <p class="mb-4">Given 2 Images, Guess which one is real.</p>
-        <p> if you get it wrong, the game will explain why it is AI-generated.</p>
-        <p class="mb-4">Test your perception skills, learn something new, and have fun!</p>
-        <a href="/game" class="bg-blue-500 text-white px-4 py-2 rounded">Start Playing</a>
+<section class="py-12">
+  <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="rounded-2xl p-6 ring-1 ring-white/10 bg-white/5 hover:bg-white/10 transition">
+      <h3 class="font-semibold">Learn as you play</h3>
+      <p class="mt-2 text-sm text-white/70">Every wrong guess gives a one-line tell. You’ll spot seams, textures, and hands like a pro.</p>
     </div>
+    <div class="rounded-2xl p-6 ring-1 ring-white/10 bg-white/5 hover:bg-white/10 transition">
+      <h3 class="font-semibold">Fresh every round</h3>
+      <p class="mt-2 text-sm text-white/70">Random AI vs Real from multiple types: faces, nature, objects, text.</p>
+    </div>
+    <div class="rounded-2xl p-6 ring-1 ring-white/10 bg-white/5 hover:bg-white/10 transition">
+      <h3 class="font-semibold">Built for speed</h3>
+      <p class="mt-2 text-sm text-white/70">FastAPI + Alpine + Tailwind v4 CLI. No reloads. No accounts. Just vibes.</p>
+    </div>
+  </div>
 </section>
+
+<section id="rules" class="py-16">
+  <div class="max-w-5xl mx-auto px-6">
+    <h2 class="text-2xl font-bold">How to play</h2>
+    <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div class="rounded-xl p-5 bg-white/5 ring-1 ring-white/10">
+        <div class="text-2xl">🖼️</div>
+        <p class="mt-2 text-white/80">See two images: one real, one AI.</p>
+      </div>
+      <div class="rounded-xl p-5 bg-white/5 ring-1 ring-white/10">
+        <div class="text-2xl">👆</div>
+        <p class="mt-2 text-white/80">Tap the one you think is real.</p>
+      </div>
+      <div class="rounded-xl p-5 bg-white/5 ring-1 ring-white/10">
+        <div class="text-2xl">💡</div>
+        <p class="mt-2 text-white/80">Wrong? Get the tell. Learn. Try again.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
 
 {% endblock %}

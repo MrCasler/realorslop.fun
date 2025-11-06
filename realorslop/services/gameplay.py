@@ -56,9 +56,10 @@ def pick_pair(tag=None):
     # Build a neutral pair object; shuffling is handled next
     pair = {
         "ai_src": ai_img["src"],
+        "ai_source": ai_img.get("source", "Unknown"),
         "real_src": real_img["src"],
-        "explanation": ai_img.get("explanation", "This looks AI-generated based on texture/structure artifacts."),
-        "source": real_img.get("source", "Unknown")
+        "real_source": real_img.get("source", "Unknown"),
+        "explanation": ai_img.get("explanation", "This looks AI-generated based on texture/structure artifacts.")
     }
     return pair
 
@@ -70,17 +71,18 @@ def shuffle_pair(tag=None):
 
     is_left_real = random.choice([True, False])
     if is_left_real:
-        left_image  = pair["real_src"]
-        right_image = pair["ai_src"]
+        left_image, right_image = pair["real_src"], pair["ai_src"]
+        left_source, right_source = pair["real_source"], pair["ai_source"]
     else:
-        left_image  = pair["ai_src"]
-        right_image = pair["real_src"]
+        left_image, right_image = pair["ai_src"], pair["real_src"]
+        left_source, right_source = pair["ai_source"], pair["real_source"]
 
     return {
         "left_image": left_image,
         "right_image": right_image,
         "is_left_real": is_left_real,
-        "source": pair["source"],
+        "left_source": left_source,
+        "right_source": right_source,
         "explanation": pair["explanation"]
     }
 
