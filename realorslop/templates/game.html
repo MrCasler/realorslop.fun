@@ -13,14 +13,24 @@
       explanation: {{ game_data.explanation | tojson }},
       leftSource:  {{ (game_data.left_source  if game_data.get("left_source")  else None) | tojson }},
       rightSource: {{ (game_data.right_source if game_data.get("right_source") else None) | tojson }},
-
+      aiId:   {{ game_data.ai_id   | tojson }},
+      realId: {{ game_data.real_id | tojson }},
+      
       // ui state
       score: 0, lives: 3, feedback: "", locked: false,
       showPlayAgain: false,
+      showNextButton: false,
 
       // tagging
       selectedTag: "all",
       tags: ["all"],
+
+      // highlight + overlay
+      highlightSide: null,
+      lastGuessCorrect: null,
+      overlayVisible: false,
+      overlayContent: "",
+
 
       async init() {
         // tags
@@ -43,6 +53,7 @@
         }
         this.locked = true;
         try {
+
           const res = await fetch(`/api/next?tag=${encodeURIComponent(this.selectedTag)}`);
           const data = await res.json();
 
@@ -58,6 +69,8 @@
             this.leftSource  = d.left_source ?? null;
             this.rightSource = d.right_source ?? null;
             this.feedback = "";
+            this.aiId = d.ai_id;
+            this.realId = d.real_id;
             return;
           }
 
@@ -68,6 +81,8 @@
           this.leftSource  = data.left_source ?? null;
           this.rightSource = data.right_source ?? null;
           this.feedback = "";
+          this.aiId = data.ai_id;
+          this.realId = data.real_id;
         } catch (e) {
           console.error("nextRound error", e);
           this.feedback = "Network hiccup — try again.";
@@ -81,6 +96,8 @@
         this.lives = 3;
         this.feedback = "";
         this.showPlayAgain = false;
+        this.overlayVisible = false;
+        this.highlightSide = null;
         umami?.track("game_restart", { tag: this.selectedTag });
         this.nextRound();
       },
@@ -92,7 +109,9 @@
       },
 
       async guess(side) {
-        if (this.locked) return;
+        if (this.locked||this.showNextButton) return;
+
+        // true if user picked the real image
         const correct = (side === "left" && this.isLeftReal) || (side === "right" && !this.isLeftReal);
 
         // pick source based on clicked side (if provided by API)
@@ -107,20 +126,61 @@
           this.lives = Math.max(this.lives - 1, 0);
           this.feedback = "❌ Wrong! " + this.explanation + srcText;
           umami?.track("guess_wrong", { tag: this.selectedTag });
-        }
+        } 
+
+        // Per-image analytics
+        umami?.track(correct ? "image_correct" : "image_wrong", {
+            tag: this.selectedTag,
+            ai_id: this.aiId,
+            real_id: this.realId
+        });
+
+        const fakePct = Math.floor(Math.random() * 61) + 20; // 20–80%
+        this.feedback += `  (${fakePct}% guessed correctly)`; 
+        
+        this.highlightSide = side;
+        this.lastGuessCorrect = correct;
+        this.overlayText = correct ? "You got it right!" : "This one is the AI-generated image.";
+        this.overlayVisible = true;
+
+        //show manual "Next" button
+        this.showNextButton = true;
 
         if (this.lives <= 0) {
           this.feedback = `💀 Game Over! Final score: ${this.score}`;
           this.showPlayAgain = true;
+          this.showNextButton = false;
           umami?.track("game_over", { score: this.score, tag: this.selectedTag });
-          return;
         }
 
-        this.locked = true;
-        setTimeout(() => this.nextRound(), 700);
+      }, 
+
+      nextRoundManual() {
+        this.showNextButton = false;
+        this.overlayVisible = false;
+        this.highlightSide = null;
+        this.nextRound();
       }
     }'
     class="max-w-5xl mx-auto px-6"
+@keydown.window.arrow-left.prevent="
+  if (!locked && !showNextButton) {
+    guess('left');
+  } else if (showNextButton && !showPlayAgain) {
+    nextRoundManual();
+  }
+"
+@keydown.window.arrow-right.prevent="
+  if (!locked && !showNextButton) {
+    guess('right');
+  } else if (showNextButton && !showPlayAgain) {
+    nextRoundManual();
+  }
+"
+@keydown.window.enter.prevent="
+  if (showNextButton && !showPlayAgain) nextRoundManual();
+"
+
   >
 
     <!-- HUD: score / lives + tag selector -->
@@ -154,38 +214,108 @@
     <!-- Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
       <!-- LEFT -->
-      <div
-        :class="locked ? 'opacity-70 pointer-events-none' : ''"
-        class="group rounded-2xl bg-white/5 ring-1 ring-white/10 overflow-hidden hover:ring-[#22f2a2]/50 transition cursor-pointer"
-      >
-        <div class="aspect-[4/3] md:aspect-square">
-          <img
-            :src="leftImage"
-            @click="guess('left')"
-            alt="Left Image"
-            class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform"
-            loading="lazy" decoding="async"
-          >
-        </div>
-      </div>
+<!-- LEFT CARD -->
+<div
+  :class="[
+    locked ? 'opacity-70 pointer-events-none' : '',
+    'group relative rounded-2xl bg-white/5 ring-1 ring-white/10 overflow-hidden transition cursor-pointer',
+    (overlayVisible && highlightSide === 'left')
+      ? (lastGuessCorrect ? 'ring-4 ring-emerald-400 shadow-[0_0_0_6px_rgba(16,185,129,0.25)]'
+                          : 'ring-4 ring-rose-400 shadow-[0_0_0_6px_rgba(244,63,94,0.25)]')
+      : 'hover:ring-[#22f2a2]/50'
+  ]"
+>
+  <div class="aspect-[4/3] md:aspect-square">
+    <img
+      :src="leftImage"
+      @click="guess('left')"
+      alt="Left Image"
+      class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform"
+      loading="lazy" decoding="async"
+    >
+  </div>
 
-      <!-- RIGHT -->
-      <div
-        :class="locked ? 'opacity-70 pointer-events-none' : ''"
-        class="group rounded-2xl bg-white/5 ring-1 ring-white/10 overflow-hidden hover:ring-[#22f2a2]/50 transition cursor-pointer"
-      >
-        <div class="aspect-[4/3] md:aspect-square">
-          <img
-            :src="rightImage"
-            @click="guess('right')"
-            alt="Right Image"
-            class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform"
-            loading="lazy" decoding="async"
-          >
+  <!-- PER-CARD OVERLAY (LEFT) -->
+  <template x-if="overlayVisible && highlightSide === 'left'">
+    <div class="absolute inset-0 grid place-items-center bg-black/45 backdrop-blur-sm">
+      <div class="flex flex-col items-center gap-3">
+        <p class="text-white text-xl md:text-2xl font-semibold" x-text="overlayText"></p>
+
+        <!-- check/cross bubble -->
+        <div
+          :class="lastGuessCorrect ? 'bg-white text-emerald-500' : 'bg-white text-rose-500'"
+          class="w-20 h-20 rounded-full shadow-xl grid place-items-center"
+        >
+          <!-- inline SVG icon -->
+          <svg x-show="lastGuessCorrect" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-10 h-10" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+          <svg x-show="!lastGuessCorrect" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-10 h-10" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
         </div>
+
+        <p class="text-white/80 text-xs md:text-sm">
+          Press ←/→ or click <span class="font-semibold">Next</span>
+        </p>
       </div>
     </div>
+  </template>
+</div>
 
+
+      <!-- RIGHT -->
+<div
+  :class="[
+    locked ? 'opacity-70 pointer-events-none' : '',
+    'group relative rounded-2xl bg-white/5 ring-1 ring-white/10 overflow-hidden transition cursor-pointer',
+    (overlayVisible && highlightSide === 'right')
+      ? (lastGuessCorrect ? 'ring-4 ring-emerald-400 shadow-[0_0_0_6px_rgba(16,185,129,0.25)]'
+                          : 'ring-4 ring-rose-400 shadow-[0_0_0_6px_rgba(244,63,94,0.25)]')
+      : 'hover:ring-[#22f2a2]/50'
+  ]"
+>
+  <div class="aspect-[4/3] md:aspect-square">
+    <img
+      :src="rightImage"
+      @click="guess('right')"
+      alt="Right Image"
+      class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform"
+      loading="lazy" decoding="async"
+    >
+  </div>
+
+  <!-- PER-CARD OVERLAY (RIGHT) -->
+  <template x-if="overlayVisible && highlightSide === 'right'">
+    <div class="absolute inset-0 grid place-items-center bg-black/45 backdrop-blur-sm">
+      <div class="flex flex-col items-center gap-3">
+        <p class="text-white text-xl md:text-2xl font-semibold" x-text="overlayText"></p>
+
+        <!-- check/cross bubble -->
+        <div
+          :class="lastGuessCorrect ? 'bg-white text-emerald-500' : 'bg-white text-rose-500'"
+          class="w-20 h-20 rounded-full shadow-xl grid place-items-center"
+        >
+          <!-- inline SVG icon -->
+          <svg x-show="lastGuessCorrect" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-10 h-10" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+          <svg x-show="!lastGuessCorrect" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-10 h-10" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </div>
+
+        <p class="text-white/80 text-xs md:text-sm">
+          Press ←/→ or click <span class="font-semibold">Next</span>
+        </p>
+      </div>
+    </div>
+  </template>
+
+</div>
+
+    </div>
+
+    <!-- Next Button Actions -->
+    <div x-show="showNextButton" class="mt-6 flex justify-center" >
+        <button @click="nextRoundManual()"
+                class="px-5 py-3 rounded-xl bg-[#22f2a2] text-gray-900 font-medium hover:opacity-95 transition">
+            Next Round →
+        </button>
+    </div>
+    
     <!-- Game over actions -->
     <div x-show="showPlayAgain" class="mt-6 flex flex-col sm:flex-row items-center gap-3">
       <button @click="playAgain()"
@@ -199,8 +329,9 @@
     </div>
 
     <!-- Tiny helper text -->
-    <p class="mt-4 text-xs text-white/50 text-center">
-      Tip: use ← → arrows to guess (add later).
+    <p class="mt-4 text-s text-white/50 text-center">
+      Tip: use ← → arrows to guess. 
+        Enter or ← → to continue.
     </p>
   </div>
 </section>

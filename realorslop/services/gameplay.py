@@ -59,7 +59,9 @@ def pick_pair(tag=None):
         "ai_source": ai_img.get("source", "Unknown"),
         "real_src": real_img["src"],
         "real_source": real_img.get("source", "Unknown"),
-        "explanation": ai_img.get("explanation", "This looks AI-generated based on texture/structure artifacts.")
+        "explanation": ai_img.get("explanation", "This looks AI-generated based on texture/structure artifacts."),
+        "ai_id": ai_img["id"],
+        "real_id": real_img["id"],
     }
     return pair
 
@@ -83,6 +85,8 @@ def shuffle_pair(tag=None):
         "is_left_real": is_left_real,
         "left_source": left_source,
         "right_source": right_source,
-        "explanation": pair["explanation"]
+        "explanation": pair["explanation"],
+        "ai_id": pair["ai_id"],
+        "real_id": pair["real_id"],
     }
 

@@ -33,3 +33,4 @@ def api_next(request: Request):
 def api_tags():
     tags = gameplay.get_tags()
     return {"tags": tags}
+
