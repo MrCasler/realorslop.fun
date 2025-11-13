@@ -118,7 +118,7 @@
         const usedSource = side === "left" ? this.leftSource : this.rightSource;
         const srcText = usedSource ? `  Source: ${usedSource}` : "";
 
-        if (correct) {
+        if (correct && this.lives > 0) {
           this.score++;
           this.feedback = "✅ Correct! Nice spot." + srcText;
           umami?.track("guess_correct", { tag: this.selectedTag });
@@ -140,7 +140,7 @@
         
         this.highlightSide = side;
         this.lastGuessCorrect = correct;
-        this.overlayText = correct ? "You got it right!" : "This one is the AI-generated image.";
+        this.overlayText = correct ? "You got it right! " + fakePct + " %guessed correctly" : "This one is the AI-generated image. " + fakePct + "% also got it wrong.";
         this.overlayVisible = true;
 
         //show manual "Next" button
@@ -178,7 +178,10 @@
   }
 "
 @keydown.window.enter.prevent="
-  if (showNextButton && !showPlayAgain) nextRoundManual();
+  if (showNextButton && !showPlayAgain ) {nextRoundManual();
+    } else if (showPlayAgain) {
+      playAgain();
+    }
 "
 
   >
