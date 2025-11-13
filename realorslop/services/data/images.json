@@ -193,7 +193,7 @@
 
     {
         "id": "christmasfamily-02ai",
-        "src": "/static/images/ai/aigen_christmasfamily2.jpeg",
+        "src": "/static/images/ai/aigen_christmasfamily2.png",
         "source": "gpt",
         "label": "ai",
         "tags": ["christmas"],
